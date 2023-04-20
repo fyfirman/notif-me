@@ -4,18 +4,23 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"os"
+	"strconv"
 )
 
-const telegramBotToken = "xxxxx"
-const telegramChatID = -81321321
-
 type telegramMessage struct {
-	ChatID              int64  `json:"chat_id"`
+	ChatID              int    `json:"chat_id"`
 	Text                string `json:"text"`
 	DisableNotification bool   `json:"disable_notification"`
 }
 
 func sendTelegramMessage(message string, DisableNotification bool) error {
+	telegramBotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	telegramChatID, err := strconv.Atoi(os.Getenv("TELEGRAM_CHAT_ID"))
+
+	if err != nil {
+		return err
+	}
 
 	botMessage := telegramMessage{
 		ChatID:              telegramChatID,

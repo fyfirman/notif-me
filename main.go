@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func log(s ...string) {
@@ -48,6 +50,8 @@ func checkForUpdates(url string, noChapterIdentifier string) {
 }
 
 func main() {
+	godotenv.Load(".env")
+
 	url := "https://komikcast.site/chapter/jujutsu-kaisen-chapter-221-bahasa-indonesia/"
 	noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"
 
