@@ -1,33 +1,25 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/go-co-op/gocron"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
-func log(s ...string) {
-	loc, err := time.LoadLocation("Asia/Jakarta")
-	if err != nil {
-		panic(err)
-	}
-	currentTime := time.Now().In(loc)
-
-	message := currentTime.Format("2006-01-02 15:04:05") + " GMT+7 " + strings.Join(s, " ")
-	fmt.Println(message)
-}
-
 func checkForUpdates(url string, noChapterIdentifier string) {
-	log("Checking for updates, url :", url)
+	log.Println("Checking for updates, url :", url)
 
 	// Send a GET request to the URL
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 	defer resp.Body.Close()
@@ -35,16 +27,16 @@ func checkForUpdates(url string, noChapterIdentifier string) {
 	// Read the HTML content of the page
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	// Check for the presence of the new release
 	if strings.Contains(string(body), noChapterIdentifier) {
-		log("No new chapter yet")
+		log.Println("No new chapter yet")
 		sendTelegramMessage("No new chapter yet", true)
 	} else {
-		log("New chapter released!")
+		log.Println("New chapter released!")
 		sendTelegramMessage("New chapter released. Go to link:"+url, false)
 	}
 }
@@ -55,11 +47,29 @@ func main() {
 	url := "https://komikcast.site/chapter/jujutsu-kaisen-chapter-221-bahasa-indonesia/"
 	noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"
 
-	sendTelegramMessage("🚀 NotifMe started with url: "+url, false)
+	sendTelegramMessage("🚀 NotifMe v0.0.1 started with url: "+url, false)
 
-	checkForUpdates(url, noChapterIdentifier)
-	ticker := time.NewTicker(1 * time.Hour)
-	for range ticker.C {
+	s := gocron.NewScheduler(time.UTC)
+	s.Every(15).Minutes().Do(func() {
 		checkForUpdates(url, noChapterIdentifier)
+	})
+	s.StartAsync()
+
+	router := mux.NewRouter()
+
+	router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	http.Handle("/", router)
+	srv := &http.Server{
+		Handler: router,
+		Addr:    "127.0.0.1:8080",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
 	}
+
+	log.Println("Application served at 127.0.0.1:8080")
+	log.Fatal(srv.ListenAndServe())
 }
