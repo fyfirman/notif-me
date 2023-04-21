@@ -47,7 +47,7 @@ func main() {
 	url := "https://komikcast.site/chapter/jujutsu-kaisen-chapter-221-bahasa-indonesia/"
 	noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"
 
-	sendTelegramMessage("🚀 NotifMe v0.0.1 started with url: "+url, false)
+	sendTelegramMessage("🚀 NotifMe v0.0.2 started with url: "+url, false)
 
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(15).Minutes().Do(func() {
