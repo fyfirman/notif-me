@@ -64,12 +64,12 @@ func main() {
 	http.Handle("/", router)
 	srv := &http.Server{
 		Handler: router,
-		Addr:    "127.0.0.1:8080",
+		Addr:    ":8080",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Println("Application served at 127.0.0.1:8080")
+	log.Println("Application served at :8080")
 	log.Fatal(srv.ListenAndServe())
 }
