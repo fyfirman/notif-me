@@ -6,43 +6,13 @@ import (
 	"notif-me/services/telegram"
 
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
-
-func checkForUpdates(url string, noChapterIdentifier string) {
-	log.Println("Checking for updates, url :", url)
-
-	// Send a GET request to the URL
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Read the HTML content of the page
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// Check for the presence of the new release
-	if strings.Contains(string(body), noChapterIdentifier) {
-		log.Println("No new chapter yet")
-		telegram.Send("No new chapter yet", true)
-	} else {
-		log.Println("New chapter released!")
-		telegram.Send("New chapter released. Go to link: "+url, false)
-	}
-}
 
 func main() {
 	telegram.Send("🚀 Starting NotifMe v0.1.0 ...", false)
