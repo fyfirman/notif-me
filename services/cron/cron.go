@@ -13,14 +13,14 @@ import (
 	"github.com/go-co-op/gocron"
 )
 
-func checkForUpdates(url string, noChapterIdentifier string) {
+func checkForUpdates(url string, noChapterIdentifier string) (bool, error) {
 	log.Println("Checking for updates, url :", url)
 
 	// Send a GET request to the URL
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println(err)
-		return
+		return false, err
 	}
 	defer resp.Body.Close()
 
@@ -28,17 +28,20 @@ func checkForUpdates(url string, noChapterIdentifier string) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)
-		return
+		return false, err
 	}
 
 	// Check for the presence of the new release
 	if strings.Contains(string(body), noChapterIdentifier) {
 		log.Println("No new chapter yet")
 		telegram.Send("No new chapter yet", true)
-	} else {
-		log.Println("New chapter released!")
-		telegram.Send("New chapter released. Go to link: "+url, false)
+		return false, nil
 	}
+
+	log.Println("New chapter released!")
+	telegram.Send("New chapter released. Go to link: "+url, false)
+
+	return true, nil
 }
 
 func Start(env *env.Env) {
@@ -60,8 +63,35 @@ func Start(env *env.Env) {
 
 			url := helpers.ReplaceWildcard(mangaUpdate.RawURL, 2, mangaUpdate.LastChapter)
 
-			checkForUpdates(url, noChapterIdentifier)
+			hasNewChapter, err := checkForUpdates(url, noChapterIdentifier)
+
+			if err != nil {
+				log.Println("ERROR: " + err.Error())
+				return
+			}
+
+			payload := map[string]interface{}{
+				"id":              mangaUpdate.ID,
+				"last_checked_at": time.Now(),
+				"updated_at":      time.Now(),
+			}
+
+			if hasNewChapter {
+				payload = map[string]interface{}{
+					"id":              mangaUpdate.ID,
+					"last_chapter":    mangaUpdate.LastChapter + 1,
+					"last_checked_at": time.Now(),
+					"updated_at":      time.Now(),
+				}
+			}
+
+			err = UpdateById(env, mangaUpdate.ID, payload)
+
+			if err != nil {
+				log.Println("ERROR: " + err.Error())
+			}
 		}
 	})
+
 	s.StartAsync()
 }
