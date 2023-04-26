@@ -1,6 +1,10 @@
 package main
 
 import (
+	"notif-me/env"
+	cronService "notif-me/services/cron"
+	"notif-me/services/telegram"
+
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -8,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -37,23 +40,25 @@ func checkForUpdates(url string, noChapterIdentifier string) {
 		sendTelegramMessage("No new chapter yet", true)
 	} else {
 		log.Println("New chapter released!")
-		sendTelegramMessage("New chapter released. Go to link:"+url, false)
+		sendTelegramMessage("New chapter released. Go to link: "+url, false)
 	}
 }
 
 func main() {
+	telegram.Send("🚀 Starting NotifMe v0.1.0 ...", false)
+	log.Println("🚀 Starting NotifMe v0.1.0 ...", false)
+
 	godotenv.Load(".env")
 
-	url := "https://komikcast.site/chapter/jujutsu-kaisen-chapter-221-bahasa-indonesia/"
-	noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"
+	db, err := ConnectDB()
 
-	sendTelegramMessage("🚀 NotifMe v0.0.2 started with url: "+url, false)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	s := gocron.NewScheduler(time.UTC)
-	s.Every(15).Minutes().Do(func() {
-		checkForUpdates(url, noChapterIdentifier)
-	})
-	s.StartAsync()
+	env := &env.Env{Db: db}
+
+	cronService.Start(env)
 
 	router := mux.NewRouter()
 
