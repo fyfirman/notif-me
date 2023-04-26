@@ -55,7 +55,6 @@ func Start(env *env.Env) {
 			log.Println("Error : " + err.Error())
 			return
 		}
-		log.Printf("%+v\n", res)
 
 		for _, mangaUpdate := range res {
 			noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"

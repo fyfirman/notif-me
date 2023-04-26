@@ -20,6 +20,7 @@ func Send(message string, DisableNotification bool) error {
 	telegramChatID, err := strconv.Atoi(os.Getenv("TELEGRAM_CHAT_ID"))
 
 	if err != nil {
+		log.Println("ERROR" + err.Error())
 		return err
 	}
 
@@ -37,18 +38,16 @@ func Send(message string, DisableNotification bool) error {
 	}
 	botMessageBytes, err := json.Marshal(botMessage)
 	if err != nil {
+		log.Println("ERROR" + err.Error())
 		return err
 	}
 	telegramAPIURL := "https://api.telegram.org/bot" + telegramBotToken + "/sendMessage"
-
-	if enableTelegramNotification {
-		return nil
-	}
 
 	resp, err := http.Post(telegramAPIURL, "application/json", bytes.NewBuffer(botMessageBytes))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
 	return nil
 }
