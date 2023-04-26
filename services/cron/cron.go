@@ -1,4 +1,4 @@
-package services
+package cron
 
 import (
 	"io/ioutil"
@@ -45,11 +45,23 @@ func Start(env *env.Env) {
 	s := gocron.NewScheduler(time.UTC)
 
 	s.Every(15).Minutes().Do(func() {
-		rawUrl := "https://komikcast.site/chapter/jujutsu-kaisen-chapter-*-bahasa-indonesia/"
-		noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"
+		log.Println("Cron every 15 minutes starting...")
 
-		url := helpers.ReplaceWildcard(rawUrl, 2, 221)
-		checkForUpdates(url, noChapterIdentifier)
+		res, err := GetAll(env)
+
+		if err != nil {
+			log.Println("Error : " + err.Error())
+			return
+		}
+		log.Printf("%+v\n", res)
+
+		for _, mangaUpdate := range res {
+			noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"
+
+			url := helpers.ReplaceWildcard(mangaUpdate.RawURL, 2, mangaUpdate.LastChapter)
+
+			checkForUpdates(url, noChapterIdentifier)
+		}
 	})
 	s.StartAsync()
 }

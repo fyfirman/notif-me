@@ -37,10 +37,10 @@ func checkForUpdates(url string, noChapterIdentifier string) {
 	// Check for the presence of the new release
 	if strings.Contains(string(body), noChapterIdentifier) {
 		log.Println("No new chapter yet")
-		sendTelegramMessage("No new chapter yet", true)
+		telegram.Send("No new chapter yet", true)
 	} else {
 		log.Println("New chapter released!")
-		sendTelegramMessage("New chapter released. Go to link: "+url, false)
+		telegram.Send("New chapter released. Go to link: "+url, false)
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 func ConnectDB() (*gorm.DB, error) {
 	log.Println("Connecting DB...")
 	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-	dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := "postgres://oqknpojq:XzK6jHaPSIhovgHpuynzZ1emGJOBVYcA@john.db.elephantsql.com/oqknpojq"
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {

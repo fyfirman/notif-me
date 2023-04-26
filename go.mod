@@ -21,5 +21,6 @@ require (
 
 require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c
 	gorm.io/driver/postgres v1.5.0
 )
