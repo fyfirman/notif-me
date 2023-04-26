@@ -25,7 +25,7 @@ func Send(message string, DisableNotification bool) error {
 
 	enableTelegramNotification, err := strconv.ParseBool(os.Getenv("ENABLE_TELEGRAM_NOTIFICATION"))
 	if err != nil || !enableTelegramNotification {
-		log.Println(message)
+		log.Println("[TELEGRAM] " + message)
 		log.Println("env 'ENABLE_TELEGRAM_NOTIFICATION' is not found or false. Skipping telegram notification")
 		return nil
 	}
