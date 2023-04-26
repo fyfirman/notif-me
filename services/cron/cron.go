@@ -70,25 +70,32 @@ func Start(env *env.Env) {
 				return
 			}
 
-			payload := map[string]interface{}{
-				"id":              mangaUpdate.ID,
-				"last_checked_at": time.Now(),
-				"updated_at":      time.Now(),
-			}
+			var payload map[string]interface{}
 
-			if hasNewChapter {
+			if !hasNewChapter {
 				payload = map[string]interface{}{
 					"id":              mangaUpdate.ID,
-					"last_chapter":    mangaUpdate.LastChapter + 1,
 					"last_checked_at": time.Now(),
 					"updated_at":      time.Now(),
 				}
+				err = UpdateById(env, mangaUpdate.ID, payload)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
 			}
 
+			payload = map[string]interface{}{
+				"id":              mangaUpdate.ID,
+				"last_chapter":    mangaUpdate.LastChapter + 1,
+				"last_checked_at": time.Now(),
+				"updated_at":      time.Now(),
+			}
 			err = UpdateById(env, mangaUpdate.ID, payload)
 
 			if err != nil {
 				log.Println("ERROR: " + err.Error())
+				return
 			}
 		}
 	})
