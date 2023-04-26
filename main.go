@@ -15,8 +15,8 @@ import (
 )
 
 func main() {
-	telegram.Send("🚀 Starting NotifMe v0.1.0 ...", false)
-	log.Println("🚀 Starting NotifMe v0.1.0 ...", false)
+	appVersion := "0.1.0"
+	log.Println("🚀 Starting NotifMe v" + appVersion)
 
 	godotenv.Load(".env")
 
@@ -25,6 +25,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+	telegram.Send("🚀 NotifMe v"+appVersion+"has started", false)
 
 	env := &env.Env{Db: db}
 
