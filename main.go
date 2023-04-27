@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	appVersion := "0.1.1"
+	appVersion := "0.2.0"
 	log.Println("🚀 Starting NotifMe v" + appVersion)
 
 	godotenv.Load(".env")

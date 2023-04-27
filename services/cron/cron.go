@@ -24,6 +24,11 @@ func checkForUpdates(url string, noChapterIdentifier string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		log.Println("No new chapter yet")
+		return false, nil
+	}
+
 	// Read the HTML content of the page
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -57,15 +62,13 @@ func Start(env *env.Env) {
 		}
 
 		for _, mangaUpdate := range res {
-			noChapterIdentifier := "<title>Halaman tidak di temukan - Komikcast</title>"
-
 			url := helpers.ReplaceWildcard(mangaUpdate.RawURL, 2, mangaUpdate.LastChapter)
 
-			hasNewChapter, err := checkForUpdates(url, noChapterIdentifier)
+			hasNewChapter, err := checkForUpdates(url, mangaUpdate.NegativeIdentifier)
 
 			if err != nil {
 				log.Println("ERROR: " + err.Error())
-				return
+				continue
 			}
 
 			var payload map[string]interface{}
@@ -80,7 +83,7 @@ func Start(env *env.Env) {
 				if err != nil {
 					log.Println("ERROR: " + err.Error())
 				}
-				return
+				continue
 			}
 
 			payload = map[string]interface{}{
@@ -93,7 +96,7 @@ func Start(env *env.Env) {
 
 			if err != nil {
 				log.Println("ERROR: " + err.Error())
-				return
+				continue
 			}
 		}
 	})
