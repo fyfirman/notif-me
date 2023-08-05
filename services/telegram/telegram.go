@@ -3,10 +3,12 @@ package telegram
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type TelegramMessage struct {
@@ -50,4 +52,40 @@ func Send(message string, DisableNotification bool) error {
 	defer resp.Body.Close()
 
 	return nil
+}
+
+type SetWebhookBody struct {
+	URL string `json:"url"`
+}
+
+func SetWebhook(url string) error {
+	telegramBotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+
+	telegramAPIURL := "https://api.telegram.org/bot" + telegramBotToken + "/setWebhook"
+
+	body := SetWebhookBody{
+		URL: url,
+	}
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		log.Println("ERROR" + err.Error())
+		return err
+	}
+
+	resp, err := http.Post(telegramAPIURL, "application/json", bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+func OnUpdateMessage(OnUpdateMessageBody OnUpdateMessageBody) error {
+	if strings.Contains(strings.ToLower(OnUpdateMessageBody.Message.Text), "/hello") {
+		Send("Hello world!", false)
+		return nil
+	}
+
+	return errors.New("unhandled webhook")
 }

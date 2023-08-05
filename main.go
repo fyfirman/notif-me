@@ -37,6 +37,48 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
+	router.HandleFunc("/api/telegram", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			URL string `json:"url"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&body)
+
+		if err != nil {
+			log.Println("ERROR " + err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
+			return
+		}
+
+		telegram.SetWebhook(body.URL)
+
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	router.HandleFunc("/api/telegram/receive", func(w http.ResponseWriter, r *http.Request) {
+		var onUpdateMessageBody telegram.OnUpdateMessageBody
+		err := json.NewDecoder(r.Body).Decode(&onUpdateMessageBody)
+
+		if err != nil {
+			log.Println("ERROR " + err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
+			return
+		}
+
+		err = telegram.OnUpdateMessage(onUpdateMessageBody)
+
+		if err != nil {
+			log.Println("ERROR" + err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
+			return
+		}
+
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
 	http.Handle("/", router)
 	srv := &http.Server{
 		Handler: router,
