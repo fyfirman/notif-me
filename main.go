@@ -76,15 +76,6 @@ func main() {
 			return
 		}
 
-		err = telegram.OnUpdateMessage(onUpdateMessageBody)
-
-		if err != nil {
-			log.Println("ERROR" + err.Error())
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
-			return
-		}
-
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 

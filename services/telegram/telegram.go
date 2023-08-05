@@ -3,7 +3,6 @@ package telegram
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -75,7 +74,7 @@ func SetWebhook(url string) error {
 	return nil
 }
 
-func OnUpdateMessage(OnUpdateMessageBody OnUpdateMessageBody) error {
+func OnUpdateMessage(OnUpdateMessageBody OnUpdateMessageBody) {
 	telegramChatID, err := strconv.Atoi(os.Getenv("TELEGRAM_CHAT_ID"))
 	if err != nil {
 		log.Println("ERROR " + err.Error())
@@ -83,8 +82,13 @@ func OnUpdateMessage(OnUpdateMessageBody OnUpdateMessageBody) error {
 
 	if strings.Contains(strings.ToLower(OnUpdateMessageBody.Message.Text), "/hello") {
 		Send(telegramChatID, "Hello world!", false)
-		return nil
+		return
 	}
 
-	return errors.New("unhandled webhook")
+	jsonStringByte, err := json.MarshalIndent(OnUpdateMessageBody, "", "  ")
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Print(string(jsonStringByte))
 }
