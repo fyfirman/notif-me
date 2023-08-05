@@ -6,7 +6,13 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	cron "notif-me/services/cron"
 )
+
+func doMigration(db *gorm.DB) {
+	db.AutoMigrate(&cron.MangaUpdate{})
+}
 
 func ConnectDB() (*gorm.DB, error) {
 	log.Println("Connecting DB...")
@@ -20,5 +26,6 @@ func ConnectDB() (*gorm.DB, error) {
 	}
 
 	log.Println("DB successfully connected")
+	doMigration(database)
 	return database, nil
 }

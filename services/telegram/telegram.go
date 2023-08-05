@@ -17,14 +17,8 @@ type TelegramMessage struct {
 	DisableNotification bool   `json:"disable_notification"`
 }
 
-func Send(message string, DisableNotification bool) error {
+func Send(chatID int, message string, DisableNotification bool) error {
 	telegramBotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-	telegramChatID, err := strconv.Atoi(os.Getenv("TELEGRAM_CHAT_ID"))
-
-	if err != nil {
-		log.Println("ERROR" + err.Error())
-		return err
-	}
 
 	enableTelegramNotification, err := strconv.ParseBool(os.Getenv("ENABLE_TELEGRAM_NOTIFICATION"))
 	if err != nil || !enableTelegramNotification {
@@ -34,7 +28,7 @@ func Send(message string, DisableNotification bool) error {
 	}
 
 	botMessage := TelegramMessage{
-		ChatID:              telegramChatID,
+		ChatID:              chatID,
 		Text:                message,
 		DisableNotification: DisableNotification,
 	}
@@ -82,8 +76,13 @@ func SetWebhook(url string) error {
 }
 
 func OnUpdateMessage(OnUpdateMessageBody OnUpdateMessageBody) error {
+	telegramChatID, err := strconv.Atoi(os.Getenv("TELEGRAM_CHAT_ID"))
+	if err != nil {
+		log.Println("ERROR " + err.Error())
+	}
+
 	if strings.Contains(strings.ToLower(OnUpdateMessageBody.Message.Text), "/hello") {
-		Send("Hello world!", false)
+		Send(telegramChatID, "Hello world!", false)
 		return nil
 	}
 

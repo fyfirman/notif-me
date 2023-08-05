@@ -4,6 +4,8 @@ import (
 	"notif-me/env"
 	cronService "notif-me/services/cron"
 	"notif-me/services/telegram"
+	"os"
+	"strconv"
 
 	"encoding/json"
 	"log"
@@ -25,7 +27,14 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	telegram.Send("🚀 NotifMe v"+appVersion+" has started", false)
+
+	telegramChatID, err := strconv.Atoi(os.Getenv("TELEGRAM_CHAT_ID"))
+
+	if err != nil {
+		log.Println("ERROR " + err.Error())
+	}
+
+	telegram.Send(telegramChatID, "🚀 NotifMe v"+appVersion+" has started", false)
 
 	env := &env.Env{Db: db}
 

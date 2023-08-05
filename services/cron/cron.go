@@ -43,7 +43,6 @@ func checkForUpdates(url string, noChapterIdentifier string) (bool, error) {
 	}
 
 	log.Println("New chapter released!")
-	telegram.Send("New chapter released. Go to link: "+url, false)
 
 	return true, nil
 }
@@ -65,6 +64,10 @@ func Start(env *env.Env) {
 			url := helpers.ReplaceWildcard(mangaUpdate.RawURL, 2, mangaUpdate.LastChapter)
 
 			hasNewChapter, err := checkForUpdates(url, mangaUpdate.NegativeIdentifier)
+
+			if hasNewChapter {
+				telegram.Send(mangaUpdate.ChatID, "New chapter released. Go to link: "+url, false)
+			}
 
 			if err != nil {
 				log.Println("ERROR: " + err.Error())
