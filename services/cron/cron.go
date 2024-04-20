@@ -26,11 +26,6 @@ func checkForUpdates(url string, noChapterIdentifier string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		log.Info().Msg("No new chapter yet. Response is not 200. Got:" + strconv.Itoa(resp.StatusCode))
-		return false, nil
-	}
-
 	// Read the HTML content of the page
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -38,9 +33,16 @@ func checkForUpdates(url string, noChapterIdentifier string) (bool, error) {
 		return false, err
 	}
 
+	if resp.StatusCode != 200 {
+		log.Info().Msg("No new chapter yet. Response is not 200. Got:" + strconv.Itoa(resp.StatusCode))
+		log.Debug().Msg(string(body))
+		return false, nil
+	}
+
 	// Check for the presence of the new release
 	if strings.Contains(string(body), noChapterIdentifier) {
 		log.Info().Msg("No new chapter yet. Response body included " + noChapterIdentifier)
+		log.Debug().Msg(string(body))
 		return false, nil
 	}
 
