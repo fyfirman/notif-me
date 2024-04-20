@@ -2,15 +2,18 @@ package main
 
 import (
 	"notif-me/env"
+	"notif-me/helpers"
 	cronService "notif-me/services/cron"
 	"notif-me/services/telegram"
 	"os"
 	"strconv"
 
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -18,7 +21,12 @@ import (
 
 func main() {
 	appVersion := "0.3.0"
-	log.Println("🚀 Starting NotifMe v" + appVersion)
+
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+	log.Logger = log.With().Str("app_version", appVersion).Logger()
+	log.Logger = log.Hook(&helpers.TelegramHook{})
+
+	log.Info().Msg("🚀 Starting NotifMe v" + appVersion)
 
 	godotenv.Load(".env")
 
@@ -31,7 +39,7 @@ func main() {
 	telegramChatID, err := strconv.Atoi(os.Getenv("TELEGRAM_CHAT_ID"))
 
 	if err != nil {
-		log.Println("ERROR " + err.Error())
+		log.Error().Msg(err.Error())
 	}
 
 	telegram.Send(telegramChatID, "🚀 NotifMe v"+appVersion+" has started", false)
@@ -54,7 +62,7 @@ func main() {
 		err := json.NewDecoder(r.Body).Decode(&body)
 
 		if err != nil {
-			log.Println("ERROR " + err.Error())
+			log.Error().Msg(err.Error())
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
 			return
@@ -70,7 +78,7 @@ func main() {
 		err := json.NewDecoder(r.Body).Decode(&onUpdateMessageBody)
 
 		if err != nil {
-			log.Println("ERROR " + err.Error())
+			log.Error().Msg(err.Error())
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
 			return
@@ -88,6 +96,6 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Println("Application served at :8080")
-	log.Fatal(srv.ListenAndServe())
+	log.Info().Msg("Application served at :8080")
+	log.Error().Msg(srv.ListenAndServe().Error())
 }

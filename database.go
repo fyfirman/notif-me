@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
 	"os"
+
+	"github.com/rs/zerolog/log"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -15,17 +16,17 @@ func doMigration(db *gorm.DB) {
 }
 
 func ConnectDB() (*gorm.DB, error) {
-	log.Println("Connecting DB...")
+	log.Info().Msg("Connecting DB...")
 	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
 	dsn := os.Getenv("POSTGRES_URL")
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
-	log.Println("DB successfully connected")
+	log.Info().Msg("DB successfully connected")
 	doMigration(database)
 	return database, nil
 }

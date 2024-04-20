@@ -1,12 +1,13 @@
 package cron
 
 import (
-	"log"
 	"notif-me/env"
+
+	"github.com/rs/zerolog/log"
 )
 
 func GetAll(env *env.Env) ([]MangaUpdate, error) {
-	log.Println("Get all manga update...")
+	log.Info().Msg("Get all manga update...")
 
 	var records []MangaUpdate
 	res := env.Db.Find(&records)

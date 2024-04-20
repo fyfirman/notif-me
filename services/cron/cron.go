@@ -1,48 +1,50 @@
 package cron
 
 import (
-	"io/ioutil"
-	"log"
+	"io"
 	"net/http"
 	"notif-me/env"
 	"notif-me/helpers"
 	"notif-me/services/telegram"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/go-co-op/gocron"
 )
 
 func checkForUpdates(url string, noChapterIdentifier string) (bool, error) {
-	log.Println("Checking for updates, url :", url)
+	log.Info().Msg("Checking for updates, url :" + url)
 
 	// Send a GET request to the URL
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Println(err)
+		log.Error().Msg(err.Error())
 		return false, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		log.Println("No new chapter yet")
+		log.Info().Msg("No new chapter yet. Response is not 200. Got:" + strconv.Itoa(resp.StatusCode))
 		return false, nil
 	}
 
 	// Read the HTML content of the page
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		log.Error().Msg(err.Error())
 		return false, err
 	}
 
 	// Check for the presence of the new release
 	if strings.Contains(string(body), noChapterIdentifier) {
-		log.Println("No new chapter yet")
+		log.Info().Msg("No new chapter yet. Response body included " + noChapterIdentifier)
 		return false, nil
 	}
 
-	log.Println("New chapter released!")
+	log.Info().Msg("New chapter released!")
 
 	return true, nil
 }
@@ -51,12 +53,12 @@ func Start(env *env.Env) {
 	s := gocron.NewScheduler(time.UTC)
 
 	s.Every(15).Minutes().Do(func() {
-		log.Println("Cron every 15 minutes starting...")
+		log.Info().Msg("Cron every 15 minutes starting...")
 
 		res, err := GetAll(env)
 
 		if err != nil {
-			log.Println("Error : " + err.Error())
+			log.Error().Msg(err.Error())
 			return
 		}
 
@@ -70,7 +72,7 @@ func Start(env *env.Env) {
 			}
 
 			if err != nil {
-				log.Println("ERROR: " + err.Error())
+				log.Error().Msg(err.Error())
 				continue
 			}
 
@@ -84,7 +86,7 @@ func Start(env *env.Env) {
 				}
 				err = UpdateById(env, mangaUpdate.ID, payload)
 				if err != nil {
-					log.Println("ERROR: " + err.Error())
+					log.Error().Msg(err.Error())
 				}
 				continue
 			}
@@ -98,7 +100,7 @@ func Start(env *env.Env) {
 			err = UpdateById(env, mangaUpdate.ID, payload)
 
 			if err != nil {
-				log.Println("ERROR: " + err.Error())
+				log.Error().Msg(err.Error())
 				continue
 			}
 		}
