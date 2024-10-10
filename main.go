@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	appVersion := "0.4.1"
+	appVersion := "0.5.0"
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 	log.Logger = log.With().Str("app_version", appVersion).Logger()
