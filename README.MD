@@ -19,3 +19,10 @@
    ```
 
 You can customize these instructions based on your specific project setup and requirements.
+
+## Deploy
+
+```sh
+docker build --platform linux/amd64 -t vm-do.fyfirman.com:23003/fyfirman/notif-me:0.4.1 .
+docker push vm-do.fyfirman.com:23003/fyfirman/notif-me:0.4.1
+```
